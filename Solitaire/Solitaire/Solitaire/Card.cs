@@ -13,25 +13,28 @@ using Microsoft.Xna.Framework.Media;
 namespace Solitaire {
     public class Card {
         Game parent;
-        string name, color;
-        Texture2D tex;
-        Vector2 lastGoodPos, currentPos;
+        Rectangle rectPos;
+        
 
         // Properties
-        public string Name { get { return this.name; } set { this.name = value; } }
-        public Texture2D Texture { get { return this.tex; } set { this.tex = value; } }
-        public Vector2 lastPos { get { return this.lastGoodPos; } set { this.lastGoodPos = value; } }
-        public string Color { get { return this.color; } set { this.color = value; } }
-        public Vector2 CurrentPos { get { return this.currentPos; } set { this.currentPos = value; } }
+        public bool Flipped { get; set; }
+        public string Name { get; set; }
+        public Texture2D Texture { get; set; }
+        public Vector2 lastPos { get; set; }
+        public string Color { get; set; }
+        public Vector2 CurrentPos { get; set; }
 
         // Default Constructor
         public Card(Game parent, string name, Texture2D texture, Vector2 pos, string color) {
             this.parent = parent;
-            this.name = name;
-            this.tex = texture;
-            this.lastGoodPos = pos;
-            this.color = color;
-            this.currentPos = pos;
+            Name = name;
+            Texture = texture;
+            lastPos = pos;
+            CurrentPos = pos;
+            Color = color;
+
+            this.rectPos = new Rectangle((int)CurrentPos.X, (int)CurrentPos.Y, Texture.Width, Texture.Width);
+            
         }
     }
 }

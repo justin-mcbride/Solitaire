@@ -478,6 +478,15 @@
       <Output>C:\Users\Justin\github\Solitaire\Solitaire\Solitaire\Solitaire\bin\x86\Debug\Content\Cards\cardBack.xnb</Output>
       <Time>2011-07-13T02:29:51.092-06:00</Time>
     </Item>
+    <Item>
+      <Source>Cards\emptySlot.png</Source>
+      <Name>Cards\emptySlot</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\Users\Justin\github\Solitaire\Solitaire\Solitaire\Solitaire\bin\x86\Debug\Content\Cards\emptySlot.xnb</Output>
+      <Time>2011-07-14T02:40:55.1874-06:00</Time>
+    </Item>
     <BuildSuccessful>true</BuildSuccessful>
     <Settings>
       <TargetPlatform>Windows</TargetPlatform>

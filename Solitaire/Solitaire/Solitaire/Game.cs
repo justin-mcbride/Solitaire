@@ -16,8 +16,10 @@ namespace Solitaire {
         public SpriteBatch spriteBatch;
         Field cards;
         public Card[] normalDeck;
+        protected Card lastClicked;
         public MouseState mouseState, pMouseState;
         private bool mouseDrag;
+        
 
         public Game() {
             graphics = new GraphicsDeviceManager(this);
@@ -27,7 +29,6 @@ namespace Solitaire {
         }
 
         protected override void Initialize() {
-            Console.WriteLine("init");
             graphics.PreferredBackBufferWidth = 600;
             graphics.PreferredBackBufferHeight = 410;
             graphics.ApplyChanges();
@@ -38,7 +39,6 @@ namespace Solitaire {
         }
 
         protected override void LoadContent() {
-            Console.WriteLine("load");
             this.spriteBatch = new SpriteBatch(GraphicsDevice);
             this.NewGame();
         }
@@ -50,6 +50,11 @@ namespace Solitaire {
         protected override void Update(GameTime gameTime) {
             pMouseState = mouseState;
             mouseState = Mouse.GetState();
+            if (mouseState.LeftButton == ButtonState.Pressed && pMouseState.LeftButton == ButtonState.Released) MouseClick();
+            if (mouseState.LeftButton == ButtonState.Pressed && pMouseState.LeftButton == ButtonState.Pressed) this.mouseDrag = true;
+                else this.mouseDrag = false;
+
+            cards.Update();
             base.Update(gameTime);
         }
 
@@ -136,6 +141,17 @@ namespace Solitaire {
             this.normalDeck = new Card[52];
             this.createCards();
             cards.Init();
+            cards.SetupGame();
+        }
+
+        protected void MouseClick() {
+            foreach (var item in normalDeck) {
+                //change to something else...
+            }
+        }
+
+        protected void MouseDrag() {
+
         }
     }
 }

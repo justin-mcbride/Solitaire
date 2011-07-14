@@ -57,3 +57,4 @@ C:\Users\Justin\github\Solitaire\Solitaire\Solitaire\Solitaire\obj\x86\Debug\Mic
 C:\Users\Justin\github\Solitaire\Solitaire\Solitaire\Solitaire\obj\x86\Debug\Solitaire.exe
 C:\Users\Justin\github\Solitaire\Solitaire\Solitaire\Solitaire\obj\x86\Debug\Solitaire.pdb
 C:\Users\Justin\github\Solitaire\Solitaire\Solitaire\Solitaire\bin\x86\Debug\Content\Cards\cardBack.xnb
+C:\Users\Justin\github\Solitaire\Solitaire\Solitaire\Solitaire\bin\x86\Debug\Content\Cards\emptySlot.xnb

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -11,22 +12,75 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 
 namespace Solitaire {
+    public class Pile {
+        private Field parent;
+        public List<Card> list;
+        public Stack<Card> stack;
+        public Queue<Card> queue;
+        public int initialCardAmount { get; set;}
+        public Rectangle rectPos;
+        private string type;
+
+        public Pile(Field parent, Rectangle pos) {
+            this.parent = parent;
+            initialCardAmount = 12;
+            rectPos = pos;
+            this.type = "stack";
+            Init();
+        }
+
+        public Pile(Field parent, int initial, Rectangle pos) {
+            this.parent = parent;
+            initialCardAmount = initial;
+            rectPos = pos;
+            this.type = "stack";
+            Init();
+        }
+
+        public Pile(Field parent, int initial, Rectangle pos, string type) {
+            this.parent = parent;
+            initialCardAmount = initial;
+            rectPos = pos;
+            this.type = type;
+            Init();
+        }
+
+        public Pile(Field parent, string type) {
+            this.parent = parent;
+            this.type = type;
+            Init();
+        }
+
+        private void Init() {
+            stack = new Stack<Card>();
+            list = new List<Card>();
+            queue = new Queue<Card>();
+        }
+    }
+
     public class Field {
         Game parent;
+
+        // Textures
         public Texture2D h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, hj, hq, hk;
         public Texture2D d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, dj, dq, dk;
         public Texture2D s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, sj, sq, sk;
         public Texture2D c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, cj, cq, ck;
-        public Texture2D backOfCard;
-        public List<Card> shuffledDeck, col0, col1, col2, col3, col4, col5, col6, ace1, ace2, ace3, ace4, currentCards;
-        private Vector2 deckV, ace1V, ace2V, ace3V, ace4V, col1V, col2V, col3V, col4V, col5V, col6V, currentV;
+        public Texture2D backOfCard, emptySlot;
+
+        public Pile[] columns, aces;
+        public Pile currentCards;
+        public Pile shuffledDeck, outDeck;
+        public Collection<Card> visibleCards;
+        public Vector2 firstColumnPosition, deckPilePosition, firstAcePosition, imageDimensions;
+        private int horizontalColumnSeparation, verticalCardSeparation;
 
         public Field(Game in_parent) {
             parent = in_parent;
-            this.Load();
+            this.LoadCardPics();
         }
 
-        public void Load() {
+        public void LoadCardPics() {
             /*
              * Hearts
              */
@@ -99,46 +153,111 @@ namespace Solitaire {
              * Misc
              */
             backOfCard = parent.Content.Load<Texture2D>("Cards/cardBack");
+            emptySlot = parent.Content.Load<Texture2D>("Cards/emptySlot");
+            imageDimensions = new Vector2(backOfCard.Width, backOfCard.Height);
+
         }
 
         public void Init() {
-            this.shuffledDeck = new List<Card>();
-            this.col0 = new List<Card>();
-            this.col1 = new List<Card>();
-            this.col2 = new List<Card>();
-            this.col3 = new List<Card>();
-            this.col4 = new List<Card>();
-            this.col5 = new List<Card>();
-            this.col6 = new List<Card>();
-            this.ace1 = new List<Card>();
-            this.ace2 = new List<Card>();
-            this.ace3 = new List<Card>();
-            this.ace4 = new List<Card>();
-            this.currentCards = new List<Card>();
+            horizontalColumnSeparation = (int)imageDimensions.X + 10;
+            verticalCardSeparation = 15;
+            this.deckPilePosition = new Vector2(15, 15);
+            this.firstColumnPosition = new Vector2(deckPilePosition.X, deckPilePosition.Y + imageDimensions.Y + 30);
+            this.firstAcePosition = new Vector2(deckPilePosition.X + imageDimensions.X + 150, deckPilePosition.Y);
+            this.shuffledDeck = new Pile(this, "queue");
+            this.shuffledDeck.rectPos = new Rectangle((int)deckPilePosition.X, (int)deckPilePosition.Y, (int)imageDimensions.X, (int)imageDimensions.Y);
+            columns = new Pile[7];
+            aces = new Pile[4];
+            for (int i = 0; i < 7; i++) {
+                if (i == 0) {
+                    columns[i] = new Pile(this, 1, new Rectangle((int)firstColumnPosition.X, (int)firstColumnPosition.Y, (int)imageDimensions.X, 0));
+                }
+                else {
+                    columns[i] = new Pile(this, i + 1, new Rectangle((columns[i - 1].rectPos.X + horizontalColumnSeparation), columns[i - 1].rectPos.Y, columns[i - 1].rectPos.Width, columns[i - 1].rectPos.Height));
+                }
+            }
+
+            for (int i = 0; i < 4; i++) {
+                if (i == 0) {
+                    aces[i] = new Pile(this, new Rectangle((int)firstAcePosition.X, (int)firstAcePosition.Y, (int)imageDimensions.X, 0));
+                }
+                else {
+                    aces[i] = new Pile(this, new Rectangle((aces[i - 1].rectPos.X + horizontalColumnSeparation), aces[i - 1].rectPos.Y, aces[i - 1].rectPos.Width, aces[i - 1].rectPos.Height));
+                }
+            }
+            this.currentCards = new Pile(this, 3, new Rectangle((int)deckPilePosition.X + horizontalColumnSeparation, (int)deckPilePosition.Y, (int)imageDimensions.X * 2, (int)imageDimensions.Y));
             this.ShuffleDeck();
         }
 
         public void ShuffleDeck() {
-            Console.WriteLine("shuffle deck");
             var cards = Enumerable.Range(0, 51);
             var shuffledcards = cards.OrderBy(a => Guid.NewGuid());
             foreach (int item in shuffledcards) {
-                this.shuffledDeck.Add(parent.normalDeck[item]);
+                this.shuffledDeck.queue.Enqueue(parent.normalDeck[item]);
             }
-            this.DESTROY();
+        }
+
+        public void SetupGame() {
+            for (int i = 0; i < columns.Count<Pile>(); i++) {
+                for (int j = 0; j < columns[i].initialCardAmount; j++) {
+                    columns[i].stack.Push(shuffledDeck.queue.Dequeue());
+                    if (j == columns[i].initialCardAmount) columns[i].stack.Peek().Flipped = true;
+                }
+            }
+        }
+
+        public void Update() {
+            UpdateCardPositions();
+        }
+
+        public void UpdateCardPositions() {
+            for (int i = 0; i < columns.Count<Pile>(); i++) {
+                for (int j = 0; j < columns[i].stack.Count; j++) {
+                    Card currentCard =  columns[i].stack.ElementAt<Card>(j);
+                    currentCard.CurrentPos = new Vector2((firstColumnPosition.X + (i * horizontalColumnSeparation)), (firstColumnPosition.Y + (j * verticalCardSeparation)));
+                }
+            }
+
+            //for (int i = 0; i < aces.Count<Pile>(); i++) {
+            //    if (aces[i].stack.Count == 0) 
+            //}
         }
 
         public void Draw() {
             var draw = parent.spriteBatch;
+            if (shuffledDeck.queue.Count > 3) draw.Draw(backOfCard, shuffledDeck.rectPos, Color.White);
+            else draw.Draw(emptySlot, shuffledDeck.rectPos, Color.White);
 
-            foreach (var item in shuffledDeck) {
-                draw.Draw(item.Texture, item.CurrentPos, Color.White);
+            for (int i = 0; i < aces.Count<Pile>(); i++) {
+                if (aces[i].stack.Count == 0) draw.Draw(emptySlot, new Vector2(((int)firstAcePosition.X + (horizontalColumnSeparation * i)), firstAcePosition.Y), Color.White);
+                else draw.Draw(aces[i].stack.ElementAt<Card>(i).Texture, new Vector2(((int)firstAcePosition.X + (horizontalColumnSeparation * i)), firstAcePosition.Y), Color.White);
+            }
+
+            foreach (var column in columns) {
+                if (column.stack.Count == 0) draw.Draw(emptySlot, column.rectPos, Color.White);
+                 else foreach (var card in column.stack) {
+                     draw.Draw(card.Texture, card.CurrentPos, Color.White);
+                }
             }
         }
 
-        public void DESTROY() {
-            for (var x = 0; x < this.shuffledDeck.Count; x++) {
-                shuffledDeck.ElementAtOrDefault<Card>(x).CurrentPos = new Vector2(x * 75, 0);
+        protected void AddVisibleLists() {
+            visibleCards = new Collection<Card>();
+            for (int i = 0; i < columns.Count<Pile>(); i++) {
+                for (int j = 0; j < columns[i].stack.Count; j++) {
+                    visibleCards.Add(columns[i].stack.ElementAt<Card>(j));
+                }
+            }
+            for (int i = 0; i < aces.Count<Pile>(); i++) {
+                for (int j = 0; j < aces[j].stack.Count; j++) {
+                    visibleCards.Add(aces[i].stack.ElementAt<Card>(j));
+                }
+            }
+            for (int i = 0; i < currentCards.stack.Count; i++) {
+                visibleCards.Add(currentCards.stack.ElementAt<Card>(i));
+            }
+            foreach (var item in currentCards.stack) {
+                visibleCards.Add(item);
             }
         }
     }
