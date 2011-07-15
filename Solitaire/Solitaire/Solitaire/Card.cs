@@ -23,6 +23,7 @@ namespace Solitaire {
         public Vector2 lastPos { get; set; }
         public string Color { get; set; }
         public Vector2 CurrentPos { get; set; }
+        public Pile CurrentPile { get; set; }
 
         // Default Constructor
         public Card(Game parent, string name, Texture2D texture, Vector2 pos, string color) {
@@ -34,7 +35,7 @@ namespace Solitaire {
             Color = color;
 
             this.rectPos = new Rectangle((int)CurrentPos.X, (int)CurrentPos.Y, Texture.Width, Texture.Width);
-            
+            Flipped = false;
         }
     }
 }

@@ -145,9 +145,7 @@ namespace Solitaire {
         }
 
         protected void MouseClick() {
-            foreach (var item in normalDeck) {
-                //change to something else...
-            }
+            cards.MouseClick(new Vector2(mouseState.X, mouseState.Y));
         }
 
         protected void MouseDrag() {

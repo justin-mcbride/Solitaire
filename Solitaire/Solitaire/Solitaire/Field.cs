@@ -166,6 +166,7 @@ namespace Solitaire {
             this.firstAcePosition = new Vector2(deckPilePosition.X + imageDimensions.X + 150, deckPilePosition.Y);
             this.shuffledDeck = new Pile(this, "queue");
             this.shuffledDeck.rectPos = new Rectangle((int)deckPilePosition.X, (int)deckPilePosition.Y, (int)imageDimensions.X, (int)imageDimensions.Y);
+            visibleCards = new Collection<Card>();
             columns = new Pile[7];
             aces = new Pile[4];
             for (int i = 0; i < 7; i++) {
@@ -202,8 +203,10 @@ namespace Solitaire {
                 for (int j = 0; j < columns[i].initialCardAmount; j++) {
                     columns[i].stack.Push(shuffledDeck.queue.Dequeue());
                     if (j == columns[i].initialCardAmount) columns[i].stack.Peek().Flipped = true;
+                    else columns[i].stack.Peek().Flipped = false;
                 }
             }
+            AddVisibleLists();
         }
 
         public void Update() {
@@ -217,10 +220,6 @@ namespace Solitaire {
                     currentCard.CurrentPos = new Vector2((firstColumnPosition.X + (i * horizontalColumnSeparation)), (firstColumnPosition.Y + (j * verticalCardSeparation)));
                 }
             }
-
-            //for (int i = 0; i < aces.Count<Pile>(); i++) {
-            //    if (aces[i].stack.Count == 0) 
-            //}
         }
 
         public void Draw() {
@@ -236,7 +235,8 @@ namespace Solitaire {
             foreach (var column in columns) {
                 if (column.stack.Count == 0) draw.Draw(emptySlot, column.rectPos, Color.White);
                  else foreach (var card in column.stack) {
-                     draw.Draw(card.Texture, card.CurrentPos, Color.White);
+                     if (card.Flipped == true) draw.Draw(card.Texture, card.CurrentPos, Color.White);
+                     else draw.Draw(backOfCard, card.CurrentPos, Color.White);
                 }
             }
         }
@@ -245,7 +245,7 @@ namespace Solitaire {
             visibleCards = new Collection<Card>();
             for (int i = 0; i < columns.Count<Pile>(); i++) {
                 for (int j = 0; j < columns[i].stack.Count; j++) {
-                    visibleCards.Add(columns[i].stack.ElementAt<Card>(j));
+                    if (columns[i].stack.ElementAt<Card>(j).Flipped == true) visibleCards.Add(columns[i].stack.ElementAt<Card>(j));
                 }
             }
             for (int i = 0; i < aces.Count<Pile>(); i++) {
@@ -259,6 +259,23 @@ namespace Solitaire {
             foreach (var item in currentCards.stack) {
                 visibleCards.Add(item);
             }
+        }
+
+        public void MouseClick(Vector2 position) {
+            for (int i = 0; i < visibleCards.Count; i++) {
+                var item = visibleCards.ElementAt<Card>(i);
+                if (position.X > item.CurrentPos.X && 
+                    position.X < item.CurrentPos.X + imageDimensions.X &&
+                    position.Y > item.CurrentPos.Y &&
+                    position.Y < item.CurrentPos.Y + imageDimensions.Y
+                    ) ValidClick(item);
+            }
+        }
+
+        public void ValidClick(Card item) {
+            if (item.Flipped == true && item.CurrentPile.stack.Peek() == item) {
+
+            };
         }
     }
 }
